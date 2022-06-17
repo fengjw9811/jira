@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react"
 import qs from 'qs'
-import { cleanObject } from '../../utils'
+import { cleanObject, useMount, useDebounce } from '../../utils'
 
-import SearchPanel from "./SearchPanel"
+import { SearchPanel } from "./SearchPanel"
 import List from './List'
 
 const apiURL = process.env.REACT_APP_API_URL
@@ -14,24 +14,24 @@ export default function ProjectListScreen() {
         personId: ''
     })
     const [list, setList] = useState([])
-
+    const debouncedParam = useDebounce(param, 500)
     //获取users的数据
-    useEffect(() => {
+    useMount(() => {
         fetch(`${apiURL}/users`).then(async response => {
             if (response.ok) {
                 setUsers(await response.json())
             }
         })
-    }, [])
+    })
 
     //获取projects的数据
     useEffect(() => {
-        fetch(`${apiURL}/projects?${qs.stringify(cleanObject(param))}`).then(async response => {
+        fetch(`${apiURL}/projects?${qs.stringify(cleanObject(debouncedParam))}`).then(async response => {
             if (response.ok) {
                 setList(await response.json())
             }
         })
-    }, [param])
+    }, [debouncedParam])
 
     return <div>
         <SearchPanel users={users} param={param} setParam={setParam}></SearchPanel>
