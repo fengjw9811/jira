@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react"
-import qs from 'qs'
 import { cleanObject, useMount, useDebounce } from '../../utils'
 
 import { SearchPanel } from "./SearchPanel"
 import List from './List'
-
-const apiURL = process.env.REACT_APP_API_URL
+import { useHttp } from "../../utils/http"
 
 export default function ProjectListScreen() {
     const [users, setUsers] = useState([])
@@ -15,22 +13,15 @@ export default function ProjectListScreen() {
     })
     const [list, setList] = useState([])
     const debouncedParam = useDebounce(param, 500)
+    const client = useHttp()
     //获取users的数据
     useMount(() => {
-        fetch(`${apiURL}/users`).then(async response => {
-            if (response.ok) {
-                setUsers(await response.json())
-            }
-        })
+        client('users').then(setUsers)
     })
 
     //获取projects的数据
     useEffect(() => {
-        fetch(`${apiURL}/projects?${qs.stringify(cleanObject(debouncedParam))}`).then(async response => {
-            if (response.ok) {
-                setList(await response.json())
-            }
-        })
+        client('projects', { data: cleanObject(debouncedParam) }).then(setList)
     }, [debouncedParam])
 
     return <div>
